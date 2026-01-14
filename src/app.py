@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import sys
 
-# Allow importing from src folder
+# Add the project root to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.vision_engine import analyze_image
@@ -11,49 +11,63 @@ from src.rag_engine import ask_pdf
 st.set_page_config(page_title="Neuro-fix", layout="wide")
 st.title("Neuro-fix: AI Hardware Assistant")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# --- SESSION STATE SETUP ---
+# We use this to remember the "Auto-Diagnose" click
+if 'auto_query' not in st.session_state:
+    st.session_state.auto_query = None
 
-col1, col2 = st.columns([1, 2])
+col1, col2 = st.columns(2)
 
+# --- LEFT COLUMN: VISION ---
 with col1:
     st.header("Vision Input")
-    img_file = st.camera_input("Scan Component")
-    detected_part = None
-
-    if img_file:
+    picture = st.camera_input("Scan Component")
+    
+    if picture:
+        # Save temp image
         with open("temp.jpg", "wb") as f:
-            f.write(img_file.getbuffer())
+            f.write(picture.getbuffer())
         
-        with st.spinner("Analyzing circuit..."):
-            detected_part = analyze_image("temp.jpg")
-        
-        if detected_part:
-            st.success(f"Detected: {detected_part}")
-        else:
-            st.warning("No component identified.")
+        st.write("Analyzing...")
+        try:
+            detected_object = analyze_image("temp.jpg")
+            st.success(f"Detected: {detected_object}")
+            
+            # THE NEW FEATURE: "Diagnose" Button
+            # Only show if we actually found something
+            if detected_object and detected_object != "None":
+                if st.button(f"Diagnose {detected_object}"):
+                    st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
+                    st.rerun() # Refresh to send the query
+            else:
+                st.warning("Try placing the object flat on a table for better detection.")
+                
+        except Exception as e:
+            st.error(f"Vision Error: {e}")
 
+# --- RIGHT COLUMN: CHAT ---
 with col2:
     st.header("Diagnostic Chat")
     
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-
-    if prompt := st.chat_input("Describe the issue..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+    # 1. Check if the button triggered a query
+    if st.session_state.auto_query:
+        user_query = st.session_state.auto_query
+        # Clear it so it doesn't loop
+        st.session_state.auto_query = None
+    else:
+        # Otherwise, wait for typing
+        user_query = st.chat_input("Describe the issue...")
+    
+    if user_query:
+        # Show the User's message
         with st.chat_message("user"):
-            st.markdown(prompt)
-
+            st.write(user_query)
+            
+        # Get the Answer
         with st.chat_message("assistant"):
-            with st.spinner("Consulting manual..."):
-                if detected_part:
-                    full_query = f"I am looking at a {detected_part}. {prompt}"
-                else:
-                    full_query = prompt
-                
-                response = ask_pdf(full_query)
-                final_answer = response["result"]
-                st.markdown(final_answer)
-        
-        st.session_state.messages.append({"role": "assistant", "content": final_answer})
+            with st.spinner("Analyzing Manual..."):
+                try:
+                    response = ask_pdf(user_query)
+                    st.write(response)
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
