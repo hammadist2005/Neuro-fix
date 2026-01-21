@@ -1,14 +1,13 @@
 import sys
 import os
 
-# FIX: Windows ChromaDB crash fix
 try:
     __import__('pysqlite3')
     sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 except ImportError:
     pass
 
-# --- IMPORTS ---
+
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
@@ -40,15 +39,12 @@ def create_vector_db(pages):
 def ask_pdf(question):
     print(f"\n--- DEBUG LOG: Asking Llama-3 about: {question} ---")
     
-    # Setup Brain & Database
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vector_db = Chroma(persist_directory="./data/vector_store", embedding_function=embeddings)
     llm = Ollama(model="llama3")
     
-    # Search & Generate
     docs = vector_db.similarity_search(question, k=3)
     
-    # DEBUG: Check if we found anything in the manual
     if not docs:
         print("--- DEBUG ERROR: No matching text found in database! ---")
         return "I could not find any information about that in the manual."
@@ -66,8 +62,7 @@ def ask_pdf(question):
     
     ANSWER:
     """
-    
-    # Get response
+
     response = llm.invoke(prompt)
     print(f"--- DEBUG: Llama-3 Replied: {response}")
     

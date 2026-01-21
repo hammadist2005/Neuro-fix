@@ -6,6 +6,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.vision_engine import analyze_image
 from src.rag_engine import ask_pdf
+from src.safety_guard import check_safety
+from src.market_agent import check_czone_price
+from src.hive_mind import search_hive
 
 st.set_page_config(
     page_title="Neuro-fix", 
@@ -15,90 +18,42 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        html, body, [class*="css"] {
-            font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
-        }
-
-        h1 {
-            font-size: 3rem !important;
-            font-weight: 800 !important;
-            color: #FFFFFF !important;
-            margin-bottom: 1.5rem !important;
-            letter-spacing: -1px;
-        }
-
-        h2 {
-            font-size: 1.6rem !important;
-            font-weight: 600 !important;
-            color: #E0E0E0 !important;
-            border-bottom: 2px solid #333;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem !important;
-        }
-
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
+        html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+        h1 { font-size: 3rem !important; font-weight: 800; color: #fff; }
+        .danger-box { border: 2px solid #ff4b4b; background-color: #2d0f0f; padding: 15px; border-radius: 8px; color: #ff4b4b; font-weight: bold; margin-bottom: 15px; }
+        .hive-box { border: 1px solid #00FF41; background-color: #001a05; padding: 15px; border-radius: 8px; color: #00FF41; margin-bottom: 15px; }
+        .market-box { border: 1px solid #3a7bd5; background-color: #0d1b2a; padding: 15px; border-radius: 8px; color: #e0e0e0; margin-bottom: 15px; }
     </style>
 """, unsafe_allow_html=True)
 
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=50)
     st.markdown("## Neuro-fix")
-    st.markdown("Automated Hardware Diagnostics powered by Computer Vision & RAG.")
-    
-    st.markdown("---")
-    
-    st.markdown("### Tech Stack")
-    st.code("Python 3.9+", language="text")
-    st.code("YOLOv8 (Vision)", language="text")
-    st.code("Llama-3 (Logic)", language="text")
-    
-    st.markdown("---")
-    
-    st.markdown("### Developer")
-    st.markdown("[![GitHub](https://img.shields.io/badge/GitHub-Repo-white?logo=github)](https://github.com/hammadist2005)")
-    st.markdown("[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin)](https://www.linkedin.com/in/hammad-bin-tahir-1a3316264)")
-    
-    st.markdown("---")
-    st.caption("v0.2 Engineering Prototype")
+    st.caption("v0.3 Enterprise Edition")
 
 st.title("Neuro-fix: AI Hardware Assistant")
 
 if 'auto_query' not in st.session_state:
     st.session_state.auto_query = None
 
-col1, col2 = st.columns([1, 1], gap="large") 
+col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
-    st.header("Vision Input")
-    picture = st.camera_input("Scan Component")
-    
+    st.header("Visual Grounding")
+    picture = st.camera_input("Scan Hardware")
     if picture:
         with open("temp.jpg", "wb") as f:
             f.write(picture.getbuffer())
-        
-        st.write("") 
-        
-        with st.spinner("Analyzing image..."):
-            try:
-                detected_object = analyze_image("temp.jpg")
-                
-                if detected_object and detected_object != "None":
-                    st.success(f"**Detected:** {detected_object}")
-                    
-                    st.write("")
-                    
-                    if st.button(f"Diagnose {detected_object}", use_container_width=True):
-                        st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
-                        st.rerun()
-                else:
-                    st.warning("No object detected. Try moving closer.")
-            except Exception as e:
-                st.error(f"Error: {e}")
+        with st.spinner("Analyzing..."):
+            detected_object = analyze_image("temp.jpg")
+            st.image("temp.jpg", caption=f"Detected: {detected_object}", use_container_width=True)
+            if detected_object and detected_object != "None":
+                if st.button(f"Diagnose {detected_object}", use_container_width=True):
+                    st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
+                    st.rerun()
 
 with col2:
-    st.header("Diagnostic Chat")
+    st.header("Neural Logic Core")
     
     if st.session_state.auto_query:
         user_query = st.session_state.auto_query
@@ -107,13 +62,45 @@ with col2:
         user_query = st.chat_input("Describe the issue...")
     
     if user_query:
-        with st.chat_message("user"):
-            st.write(user_query)
+        st.chat_message("user").write(user_query)
+        
+        is_safe, warning_msg = check_safety(user_query)
+        
+        if not is_safe:
+            st.markdown(f"<div class='danger-box'>{warning_msg}</div>", unsafe_allow_html=True)
+        else:
+            market_keywords = ["buy", "price", "cost", "new", "replace", "upgrade", "purchase"]
+            if any(x in user_query.lower() for x in market_keywords):
+                with st.spinner("Checking Karachi Prices..."):
+                    target_component = "Hardware"
+                    if "ram" in user_query.lower(): target_component = "ram"
+                    elif "ssd" in user_query.lower(): target_component = "ssd"
+                    elif "nvme" in user_query.lower(): target_component = "nvme"
+                    elif "mouse" in user_query.lower(): target_component = "mouse"
+                    elif "gpu" in user_query.lower(): target_component = "gpu"
+                    
+                    market_data = check_czone_price(target_component)
+                    
+                    if market_data['found']:
+                        st.markdown(f"""
+                            <div class='market-box'>
+                                <strong>🛒 PROCUREMENT AGENT ({market_data['source']})</strong><br>
+                                Item: {market_data['title']}<br>
+                                Price: <span style='color: #00d2ff'>{market_data['price']}</span><br>
+                                <a href='{market_data['link']}' target='_blank' style='color: #fff; text-decoration: underline;'>View Listing</a>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    else:
+                        st.caption(f"No instant price found for '{target_component}'. Checking live...")
+
+            hive_result = search_hive(user_query)
+            if hive_result:
+                st.markdown(f"<div class='hive-box'><strong>VERIFIED FIX FOUND:</strong><br>{hive_result}</div>", unsafe_allow_html=True)
             
-        with st.chat_message("assistant"):
-            with st.spinner("Searching manuals..."):
-                try:
-                    response = ask_pdf(user_query)
-                    st.write(response)
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            with st.chat_message("assistant"):
+                with st.spinner("Consulting manuals (Llama-3)..."):
+                    try:
+                        response = ask_pdf(user_query)
+                        st.write(response)     
+                    except Exception as e:
+                        st.error(f"System Error: {e}")

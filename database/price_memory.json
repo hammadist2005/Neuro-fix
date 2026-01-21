@@ -1,0 +1,32 @@
+{
+    "ssd": {
+        "title": "Solid State Drives (Live Stock)",
+        "price": "Check Live Rates",
+        "link": "https://www.czone.com.pk/solid-state-drives-ssd-pakistan-ppt.263.aspx",
+        "source": "CZone (Catalog)"
+    },
+    "nvme": {
+        "title": "Samsung NVMe Series",
+        "price": "Check Live Rates",
+        "link": "https://www.czone.com.pk/solid-state-drives-ssd-samsung-pakistan-pt.162.aspx",
+        "source": "CZone (Catalog)"
+    },
+    "ram": {
+        "title": "Desktop DDR4 RAM",
+        "price": "Check Live Rates",
+        "link": "https://www.czone.com.pk/memory-module-ram-desktop-ddr4-memory-pakistan-pt.383.aspx",
+        "source": "CZone (Catalog)"
+    },
+    "gpu": {
+        "title": "Nvidia GeForce Graphics Cards",
+        "price": "Check Live Rates",
+        "link": "https://www.czone.com.pk/graphic-cards-nvidia-geforce-pakistan-pt.155.aspx",
+        "source": "CZone (Catalog)"
+    },
+    "mouse": {
+        "title": "Gaming Mice (Logitech/A4Tech)",
+        "price": "Check Live Rates",
+        "link": "https://www.czone.com.pk/mouse-pakistan-ppt.95.aspx",
+        "source": "CZone (Catalog)"
+    }
+}

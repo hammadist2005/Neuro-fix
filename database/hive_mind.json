@@ -1,0 +1,12 @@
+{
+    "fixes": [
+        {
+            "issue": "blue screen nvlddmkm.sys",
+            "solution": "Verified Fix: Roll back Nvidia driver to version 536.23 using DDU."
+        },
+        {
+            "issue": "ram not detected",
+            "solution": "Verified Fix: Clean the gold contacts with a generic eraser and reseat firmly."
+        }
+    ]
+}

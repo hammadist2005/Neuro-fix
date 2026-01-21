@@ -1,13 +1,10 @@
 import sys
 import os
 
-# 1. Add 'src' to the python path so we can import modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
-# 2. Import directly (If this fails, we want to see the REAL error)
 from rag_engine import load_pdf, create_vector_db
 
-# 3. Run the setup
 pdf_path = "data/manuals/manual.pdf" 
 
 if os.path.exists(pdf_path):
