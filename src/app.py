@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import sys
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -56,7 +57,16 @@ with col1:
                 f.write(img_bytes)
             
             with st.spinner("Scanning for physical damage..."):
+                detected_object = "Unknown"
+                damage_status = "Error"
+                
                 detected_object, damage_status = analyze_image("temp.jpg")
+                
+                if "Cloud Vision Error" in damage_status:
+                    st.warning("⚠️ Neural Overload (Rate Limit). Cooling down for 15s...")
+                    time.sleep(15)
+                    st.info("🔄 Retrying scan...")
+                    detected_object, damage_status = analyze_image("temp.jpg")
                 
                 st.session_state.last_analyzed_image = img_bytes
                 st.session_state.cached_detected_object = detected_object
@@ -83,10 +93,12 @@ with col1:
                     </button>
                 </a>
             """, unsafe_allow_html=True)
+        elif "Cloud Vision Error" in damage_status:
+             st.warning(f"⚠️ {damage_status} (Please try again in 1 minute)")
         else:
             st.info(f"ℹ️ {damage_status}")
-            
-        if detected_object and detected_object != "None":
+
+        if detected_object and detected_object != "None" and "Unknown" not in detected_object:
             if st.button(f"Diagnose {detected_object}", use_container_width=True):
                 st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
                 st.rerun()
@@ -142,4 +154,7 @@ with col2:
                         response = ask_fast_ai(user_query)
                         st.write(response)     
                     except Exception as e:
-                        st.error(f"System Error: {e}")
+                         if "429" in str(e):
+                             st.error("⚠️ Traffic Overload. Please wait 30s and try again.")
+                         else:
+                             st.error(f"System Error: {e}")
