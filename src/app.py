@@ -35,47 +35,61 @@ st.title("Neuro-fix: AI Hardware Assistant")
 
 if 'auto_query' not in st.session_state:
     st.session_state.auto_query = None
+if 'last_analyzed_image' not in st.session_state:
+    st.session_state.last_analyzed_image = None
+if 'cached_detected_object' not in st.session_state:
+    st.session_state.cached_detected_object = None
+if 'cached_damage_status' not in st.session_state:
+    st.session_state.cached_damage_status = None
 
 col1, col2 = st.columns([1, 1], gap="large")
 
 with col1:
     st.header("Visual Grounding")
     picture = st.camera_input("Scan Hardware")
+    
     if picture:
-        with open("temp.jpg", "wb") as f:
-            f.write(picture.getbuffer())
+        img_bytes = picture.getvalue()
         
-        with st.spinner("Scanning for physical damage..."):
-            # --- UPDATED: Receive both Object and Damage Status ---
-            detected_object, damage_status = analyze_image("temp.jpg")
+        if img_bytes != st.session_state.last_analyzed_image:
+            with open("temp.jpg", "wb") as f:
+                f.write(img_bytes)
             
-            # Show the Image (Annotated if available)
-            if os.path.exists("annotated_temp.jpg"):
-                st.image("annotated_temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
-            else:
-                st.image("temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
+            with st.spinner("Scanning for physical damage..."):
+                detected_object, damage_status = analyze_image("temp.jpg")
+                
+                st.session_state.last_analyzed_image = img_bytes
+                st.session_state.cached_detected_object = detected_object
+                st.session_state.cached_damage_status = damage_status
+        
+        detected_object = st.session_state.cached_detected_object
+        damage_status = st.session_state.cached_damage_status
+        
+        if os.path.exists("annotated_temp.jpg"):
+            st.image("annotated_temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
+        elif os.path.exists("temp.jpg"):
+            st.image("temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
+        else:
+            st.image(picture, caption=f"Identified: {detected_object}", use_container_width=True)
+        
+        if "Healthy" in damage_status:
+            st.success(f"✅ {damage_status}")
+        elif "Critical" in damage_status or "Burn" in damage_status or "damage" in damage_status:
+            st.error(f"⚠️ {damage_status}")
+            st.markdown(f"""
+                <a href="https://www.google.com/maps/search/computer+repair+near+me" target="_blank">
+                    <button style='background-color:#d9534f; color:white; width:100%; padding:10px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;'>
+                        🚑 Critical Damage Detected - Find Repair Shop
+                    </button>
+                </a>
+            """, unsafe_allow_html=True)
+        else:
+            st.info(f"ℹ️ {damage_status}")
             
-            # --- NEW: Display Damage Report UI ---
-            if "Healthy" in damage_status:
-                st.success(f"✅ {damage_status}")
-            elif "Critical" in damage_status or "Burn" in damage_status or "damage" in damage_status:
-                st.error(f"⚠️ {damage_status}")
-                # "Find Repair Shop" Button for Critical Issues
-                st.markdown(f"""
-                    <a href="https://www.google.com/maps/search/computer+repair+near+me" target="_blank">
-                        <button style='background-color:#d9534f; color:white; width:100%; padding:10px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;'>
-                            🚑 Critical Damage Detected - Find Repair Shop
-                        </button>
-                    </a>
-                """, unsafe_allow_html=True)
-            else:
-                st.info(f"ℹ️ {damage_status}")
-
-            # Diagnose Button
-            if detected_object and detected_object != "None":
-                if st.button(f"Diagnose {detected_object}", use_container_width=True):
-                    st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
-                    st.rerun()
+        if detected_object and detected_object != "None":
+            if st.button(f"Diagnose {detected_object}", use_container_width=True):
+                st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
+                st.rerun()
 
 with col2:
     st.header("Neural Logic Core")
