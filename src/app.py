@@ -2,11 +2,11 @@ import streamlit as st
 import os
 import sys
 
+# Ensure we can import from src
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.fast_engine import ask_fast_ai, ask_gemini_vision
+from src.fast_engine import ask_fast_ai
 from src.vision_engine import analyze_image
-
 from src.safety_guard import check_safety
 from src.market_agent import check_czone_price
 from src.hive_mind import search_hive
@@ -43,31 +43,42 @@ with col1:
         img_bytes = picture.getvalue()
         
         if img_bytes != st.session_state.last_analyzed_image:
+            with open("temp.jpg", "wb") as f:
+                f.write(img_bytes)
+                
             with st.spinner("Analyzing..."):
-                detected_object, damage_status = analyze_image(picture) 
+                try:
+                    detected_object, damage_status = analyze_image("temp.jpg")
+                    
+                    st.session_state.last_analyzed_image = img_bytes
+                    st.session_state.cached_result = (detected_object, damage_status)
+                except Exception as e:
+                    st.error(f"Analysis Error: {e}")
+                    detected_object, damage_status = ("Error", "System Error")
 
-                st.session_state.last_analyzed_image = img_bytes
-                st.session_state.cached_result = (detected_object, damage_status)
-        
         detected_object, damage_status = st.session_state.cached_result
         
-        st.image(picture, caption=f"Detected: {detected_object}", use_container_width=True)
+        if os.path.exists("annotated_temp.jpg"):
+             st.image("annotated_temp.jpg", caption=f"Detected: {detected_object}", use_container_width=True)
+        elif picture:
+             st.image(picture, caption=f"Detected: {detected_object}", use_container_width=True)
         
         if damage_status:
             if "Error" in damage_status:
-                 st.warning("⚠️ Traffic High. Click 'Clear photo' and try again in a moment.")
+                 st.warning("⚠️ High Traffic. Click 'Clear photo' and try again.")
             elif "Healthy" in damage_status:
                 st.markdown(f"<div class='status-box healthy'>✅ {damage_status}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='status-box danger'>⚠️ {damage_status}</div>", unsafe_allow_html=True)
 
-            if "Error" not in damage_status and detected_object != "None":
+            if "Error" not in damage_status and detected_object and "None" not in detected_object:
                 if st.button("Diagnose & Fix Issue", use_container_width=True):
                     st.session_state.auto_query = f"How do I fix {detected_object} with status: {damage_status}?"
                     st.rerun()
 
 with col2:
     st.header("Neural Logic Core")
+    
     if st.session_state.auto_query:
         user_query = st.session_state.auto_query
         st.session_state.auto_query = None
@@ -80,9 +91,12 @@ with col2:
         if any(w in user_query.lower() for w in ["price", "buy", "cost"]):
             with st.spinner("Checking Market Prices..."):
                 target = "RAM" if "ram" in user_query.lower() else "Hardware"
-                market_data = check_czone_price(target)
-                if market_data['found']:
-                    st.info(f"💰 **{market_data['title']}**: {market_data['price']}")
+                try:
+                    market_data = check_czone_price(target)
+                    if market_data['found']:
+                        st.info(f"💰 **{market_data['title']}**: {market_data['price']}")
+                except:
+                    pass
         
         with st.chat_message("assistant"):
             with st.spinner("Thinking..."):

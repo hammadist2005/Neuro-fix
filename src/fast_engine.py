@@ -28,13 +28,21 @@ def ask_fast_ai(query):
     except Exception as e:
         return f"Error: {str(e)}"
 
-def ask_gemini_vision(image_bytes):
+def ask_gemini_vision(image_input):
     """
-    Vision analysis with Image Optimization.
+    Robust Vision Analysis: Accepts Bytes, File Path, or PIL Image.
     """
     try:
-        image = Image.open(io.BytesIO(image_bytes))
-        
+        image = None
+        if isinstance(image_input, str):
+            if os.path.exists(image_input):
+                image = Image.open(image_input)
+            else:
+                return "Object: Error\nStatus: Image file not found."
+        elif isinstance(image_input, bytes):
+            image = Image.open(io.BytesIO(image_input))
+        else:
+            image = Image.open(image_input)
         max_size = 1024
         if image.width > max_size or image.height > max_size:
             image.thumbnail((max_size, max_size))
