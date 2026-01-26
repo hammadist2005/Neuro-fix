@@ -1,51 +1,51 @@
-# 🧠 Neuro-fix: AI Hardware Diagnostic Agent
+# Neuro-fix: Automated Hardware Diagnostic System
 
-**Neuro-fix** is an enterprise-grade AI agent designed to diagnose computer hardware issues in real-time. It pioneers a **Hybrid Edge-Cloud Architecture**, combining the speed of local computer vision with the reasoning power of multimodal Cloud LLMs.
+Neuro-fix is an enterprise-grade AI agent designed to diagnose computer hardware issues in real-time. It pioneers a **Hybrid Edge-Cloud Architecture**, combining the low-latency performance of local computer vision with the reasoning capabilities of multimodal Cloud LLMs.
 
-## 🚀 Key Features
+## Key Capabilities
 
 ### 1. Hybrid Vision Engine (Edge + Cloud)
-* **Local Layer (Edge AI):** Uses **YOLOv8** running locally to provide instant visual feedback (Red Bounding Box) with <50ms latency.
-* **Cloud Layer (Deep Reasoning):** Uses **Google Gemini 1.5 Flash** to analyze pixel-level details. It correctly identifies specific components (e.g., "DDR4 RAM Stick" vs "Generic Electronics") and overrides local classification errors.
+* **Local Inference (Edge AI):** Utilizes **YOLOv8** running locally to provide immediate visual grounding and object detection with sub-50ms latency.
+* **Cloud Reasoning (Deep Analysis):** Integrates **Google Gemini 1.5 Flash** to analyze high-resolution pixel data. This layer validates component identification (e.g., distinguishing specific RAM modules from generic electronics) and corrects local classification errors.
 
-### 2. Deep Damage Detection
-* **Automated Triage:** The system scans hardware images for physical defects such as **burn marks, cracked chips, rusted ports, or swollen capacitors**.
-* **Smart Alerts:**
-    * ✅ **Healthy:** displays a clean bill of health.
-    * ⚠️ **Critical:** triggers a "Red Alert" and automatically suggests a repair shop if physical damage is detected.
+### 2. Automated Physical Damage Assessment
+* **Defect Recognition:** The system autonomously scans hardware imagery for physical defects, including burn marks, circuit fractures, oxidation, or capacitor swelling.
+* **Triage Protocol:**
+    * **Healthy:** Validates component integrity for troubleshooting.
+    * **Critical:** Triggers an immediate "Critical Damage" alert and routes the user to repair services if physical compromise is detected.
 
-### 3. Neural Logic Core (Hyper-Speed)
-* Replaced the legacy local RAG (Llama-3) with **Gemini 1.5 Flash**, reducing query response time from **8 minutes to < 1 second**.
-* Generates step-by-step repair guides, installation manuals, and troubleshooting flows instantly.
+### 3. Neural Logic Core
+* **High-Performance Inference:** Migrated from local RAG (Llama-3) to **Gemini 1.5 Flash**, reducing query response latency from minutes to under 1 second.
+* **Generative Support:** Produces context-aware repair guides, installation procedures, and technical troubleshooting flows dynamically.
 
-### 4. Real-Time Market Agent
-* **Live Pricing:** Automatically detects intent when a user asks to "buy" or "replace" a part.
-* **Web Scraper:** Connects to local vendors (e.g., CZone) to fetch real-time pricing and stock availability for the specific identified part.
+### 4. Real-Time Market Intelligence
+* **Intent Recognition:** Automatically detects procurement intent within user queries (e.g., "replace," "upgrade," "buy").
+* **Vendor Integration:** Scrapes live pricing and stock availability from local hardware vendors (e.g., CZone) to provide actionable purchasing data.
 
-### 5. "Lethality Lock" Safety Guard
-* A custom security layer that intercepts and blocks dangerous, unethical, or malicious queries (e.g., explosives, bio-weapons) before they reach the core AI.
-
----
-
-## 🛠️ Tech Stack
-
-* **Core Logic:** Python 3.10+
-* **Frontend:** Streamlit
-* **LLM Engine:** Google Gemini 1.5 Flash (via Google Generative AI SDK)
-* **Edge Vision:** Ultralytics YOLOv8 (Local Inference)
-* **Computer Vision:** OpenCV, PIL
-* **Security:** Python-Dotenv (Environment Variable Management)
-* **Web Scraping:** BeautifulSoup4
+### 5. Safety & Compliance Layer
+* **"Lethality Lock" Protocol:** A proprietary security layer that intercepts and sanitizes queries to prevent the generation of harmful, unethical, or dangerous content.
 
 ---
 
-## ⚙️ Installation
+## Technical Specifications
+
+* **Core Framework:** Python 3.10+
+* **Frontend Interface:** Streamlit
+* **LLM Runtime:** Google Gemini 1.5 Flash (via Google Generative AI SDK)
+* **Object Detection:** Ultralytics YOLOv8 (Local Inference)
+* **Image Processing:** OpenCV, PIL
+* **Configuration Management:** Python-Dotenv
+* **Data Aggregation:** BeautifulSoup4
+
+---
+
+## Installation & Configuration
 
 ### Prerequisites
 * Python 3.10 or higher
-* A Google Cloud API Key (for Gemini 1.5 Flash)
+* Valid Google Cloud API Key (Generative AI)
 
-### Setup Steps
+### Setup Instructions
 
 1.  **Clone the Repository**
     ```bash
@@ -53,7 +53,7 @@
     cd Neuro-fix
     ```
 
-2.  **Create a Virtual Environment**
+2.  **Initialize Virtual Environment**
     ```bash
     python -m venv venv
     # Windows:
@@ -67,31 +67,29 @@
     pip install -r requirements.txt
     ```
 
-4.  **Configure Security**
-    Create a file named `.env` in the root folder (same place as `app.py`) and add your key:
+4.  **Configure Environment Variables**
+    Create a `.env` file in the root directory and define your API credentials:
     ```ini
     GOOGLE_API_KEY=your_actual_api_key_here
     ```
-    *(Note: This file is git-ignored to protect your credentials.)*
 
 ---
 
-## 🖥️ Usage
+## Operational Workflow
 
-1.  **Launch the Agent**
+1.  **Initialize System**
     ```bash
     python -m streamlit run src/app.py
     ```
 
-2.  **Workflow**
-    * **Visual Grounding:** Click "Scan Hardware" to take a photo. The Hybrid Engine will instantly detect the object and scan for physical damage.
-    * **Diagnosis:** If the part is healthy, click "Diagnose [Part Name]" to get an instant troubleshooting guide.
-    * **Market Check:** Ask "Price of 16GB RAM" to trigger the Market Agent.
-    * **Safety Test:** Try asking a dangerous question to see the "Lethality Lock" in action.
+2.  **Diagnostic Process**
+    * **Visual Grounding:** Initiate a hardware scan via the "Visual Grounding" interface. The system will detect the component and assess physical condition.
+    * **Analysis:** Select the identified component to generate a troubleshooting guide.
+    * **Market Inquiry:** Query pricing (e.g., "Price of 16GB RAM") to engage the Market Intelligence module.
 
 ---
 
-## 🛡️ Disclaimer
-This tool is a prototype for educational and demonstration purposes. While it uses advanced AI for diagnosis, always consult a certified technician for critical hardware repairs.
+## Disclaimer
+This software is a prototype developed for educational and demonstration purposes. Critical hardware repairs should be performed by certified technicians.
 
 *Neuro-fix v0.3 Enterprise Edition*
