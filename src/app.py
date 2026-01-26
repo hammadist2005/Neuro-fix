@@ -5,7 +5,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.vision_engine import analyze_image
-from src.rag_engine import ask_pdf
+from src.fast_engine import ask_fast_ai
 from src.safety_guard import check_safety
 from src.market_agent import check_czone_price
 from src.hive_mind import search_hive
@@ -44,9 +44,34 @@ with col1:
     if picture:
         with open("temp.jpg", "wb") as f:
             f.write(picture.getbuffer())
-        with st.spinner("Analyzing..."):
-            detected_object = analyze_image("temp.jpg")
-            st.image("temp.jpg", caption=f"Detected: {detected_object}", use_container_width=True)
+        
+        with st.spinner("Scanning for physical damage..."):
+            # --- UPDATED: Receive both Object and Damage Status ---
+            detected_object, damage_status = analyze_image("temp.jpg")
+            
+            # Show the Image (Annotated if available)
+            if os.path.exists("annotated_temp.jpg"):
+                st.image("annotated_temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
+            else:
+                st.image("temp.jpg", caption=f"Identified: {detected_object}", use_container_width=True)
+            
+            # --- NEW: Display Damage Report UI ---
+            if "Healthy" in damage_status:
+                st.success(f"✅ {damage_status}")
+            elif "Critical" in damage_status or "Burn" in damage_status or "damage" in damage_status:
+                st.error(f"⚠️ {damage_status}")
+                # "Find Repair Shop" Button for Critical Issues
+                st.markdown(f"""
+                    <a href="https://www.google.com/maps/search/computer+repair+near+me" target="_blank">
+                        <button style='background-color:#d9534f; color:white; width:100%; padding:10px; border:none; border-radius:4px; cursor:pointer; font-weight:bold;'>
+                            🚑 Critical Damage Detected - Find Repair Shop
+                        </button>
+                    </a>
+                """, unsafe_allow_html=True)
+            else:
+                st.info(f"ℹ️ {damage_status}")
+
+            # Diagnose Button
             if detected_object and detected_object != "None":
                 if st.button(f"Diagnose {detected_object}", use_container_width=True):
                     st.session_state.auto_query = f"How do I troubleshoot or replace the {detected_object}?"
@@ -98,9 +123,9 @@ with col2:
                 st.markdown(f"<div class='hive-box'><strong>VERIFIED FIX FOUND:</strong><br>{hive_result}</div>", unsafe_allow_html=True)
             
             with st.chat_message("assistant"):
-                with st.spinner("Consulting manuals (Llama-3)..."):
+                with st.spinner("Consulting Neural Cloud..."):
                     try:
-                        response = ask_pdf(user_query)
+                        response = ask_fast_ai(user_query)
                         st.write(response)     
                     except Exception as e:
                         st.error(f"System Error: {e}")
